@@ -1,0 +1,43 @@
+#Prof. Fernando Amaral
+from pyspark.ml.feature import RFormula
+from pyspark.ml.classification import NaiveBayes
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+
+iris = spark.read.csv("/home/fernando/download/iris.csv",inferSchema=True, header=True)
+iris.show(3)
+
+
+
+#RFormula faz vários tipos de transformações
+formula = RFormula(formula="class ~ . ",featuresCol="features", labelCol="label", handleInvalid="skip")
+
+#aplicamos a formula e selecionamos apenas as colunas que interessam
+iris_trans = formula.fit(iris).transform(iris).select("features","label")
+
+#resultado
+iris_trans.show(truncate=False)
+
+
+irisTreino, irisTeste = iris_trans.randomSplit([0.7,0.3])
+
+
+
+
+nb = NaiveBayes(smoothing=2,   labelCol="label", featuresCol="features")
+
+
+
+modelo = nb.fit(irisTreino)
+
+
+
+previsao = modelo.transform(irisTeste)
+previsao.show()
+
+
+
+
+#accuracy
+avaliar = MulticlassClassificationEvaluator(predictionCol="prediction", labelCol="label",metricName="accuracy")
+avaliar = avaliar.evaluate(previsao)
+print(avaliar)

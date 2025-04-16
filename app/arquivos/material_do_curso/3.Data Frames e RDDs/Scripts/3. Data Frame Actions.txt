@@ -1,0 +1,33 @@
+#Prof. Fernando Amaral
+#formato tabular
+despachantes.show(1)
+
+#formato de lista
+despachantes.take(1) /head/firt
+
+#retorna todos dados como uma lista
+despachantes.collect()
+
+#conta
+despachantes.count()
+
+#trasnformações
+
+#padrão crescente
+despachantes.orderBy("vendas").show()
+
+#decrescente
+despachantes.orderBy(Func.col("vendas").desc()).show()
+
+#se quiser cidade dec e valor dec
+despachantes.orderBy(Func.col("cidade").desc(),Func.col("vendas").desc()).show()
+
+#agrupar dados
+#ver vendas por cidade
+despachantes.groupBy("cidade").agg(sum("vendas")).show()
+
+#ordernar por vendas decrecente
+despachantes.groupBy("cidade").agg(sum("vendas")).orderBy(Func.col("sum(vendas)").desc())show()
+
+#filter
+despachantes.filter(Func.col("nome") == "Deolinda Vilela").show()

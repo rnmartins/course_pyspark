@@ -1,0 +1,16 @@
+#Prof. Fernando Amaral
+from pyspark.sql import SparkSession
+
+if __name__ == "__main__":
+	spark = SparkSession.builder.appName("Streaming").getOrCreate()
+	
+	jsonschema = "nome STRING, postagem STRING, data INT"
+	
+	df = spark.readStream.json("/home/fernando/testestream/", schema=jsonschema)
+	
+	diretorio = "/home/fernando/temp/"
+	
+	Stcal = df.writeStream.format("console").outputMode("append").trigger(processingTime="5 second").option("checkpointlocation","...").start()
+	
+	Stcal.awaitTermination()
+

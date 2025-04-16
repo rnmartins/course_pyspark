@@ -1,0 +1,47 @@
+#Prof. Fernando Amaral
+sudo apt-get update
+sudo apt-get update && apt-get install postgresql-12
+
+#logar no postresql e criar banco de dados
+sudo -u postgres psql
+
+create database vendas;
+#muda
+\c vendas;
+
+#iniciar a execução dos scripts 1 até 6
+\i /home/fernando/download/demo/1.CreateTable.sql
+\i /home/fernando/download/demo/2.InsertClientes.sql
+\i /home/fernando/download/demo/3.InsertIntoProdutos.sql
+\i /home/fernando/download/demo/4.InsertIntoVendedores.sql
+\i //home/fernando/download/demo/5.InsertIntoVendas.sql
+\i /home/fernando/download/demo/6.InsertItensVenda.sql
+
+#listar tabelas
+\dt
+
+#sair
+\q
+
+#baixar e instalar driver jdbc para postgres
+wget https://jdbc.postgresql.org/download/postgresql-42.2.23.jar
+
+#para rodar
+pyspark --jars  [caminho e nome]
+
+from pyspark.sql import SparkSession
+
+#ler dados
+resumo = spark.read.format("jdbc").option("url"."jdbc:postgresql://localhost:5432/vendas").option("dbtable","Vendas").option("user","postgres").option("password","123456").option("driver","org.postgresql.Driver").load()
+
+#tranformar dados
+vendadata = resumo.select("data","total").show()
+
+#gravar dados na origem
+vendadata .write.format("jdbc").option("url","jdbc:postgresql://localhost:5432/vendas").option("dbtable","vendadata").option("user","postgres").option("password","123456").option("driver","org.postgresql.Driver").save()
+
+#logar no postresql para ver o resultado
+sudo -u postgres psql
+
+#muda banco de dados
+\c vendas;

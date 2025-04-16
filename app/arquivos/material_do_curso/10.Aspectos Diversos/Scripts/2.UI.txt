@@ -1,0 +1,14 @@
+#Prof. Fernando Amaral
+from pyspark.sql.types import *
+from pyspark import StorageLevel
+
+despachantes = spark.read.csv("/home/fernando/download/despachantes.csv", header=False, inferSchema=True)
+despachantes.show()
+
+despachantes.cache()
+despachantes.persist(StorageLevel.MEMORY_AND_DISK).count()
+
+spark.sql("use desp")
+
+despachantes.write.partitionBy("c3").saveAsTable("desp_UI")
+

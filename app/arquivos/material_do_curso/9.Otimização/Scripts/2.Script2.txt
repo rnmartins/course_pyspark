@@ -1,0 +1,13 @@
+#Prof. Fernando Amaral
+from pyspark import StorageLevel
+
+spark.sql("use desp")
+df = spark.sql("select * from despachantes")
+df.storageLevel
+df.cache()
+df.storageLevel
+df.unpersist()
+
+print(type(df2))
+df2.persist(StorageLevel.MEMORY_AND_DISK).count()
+

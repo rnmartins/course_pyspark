@@ -1,0 +1,19 @@
+from pyspark.sql import SparkSession
+
+if __name__ == "__main__":
+	
+	spark = SparkSession.builder.appName("Streaming").getOrCreate()
+	
+	jsonschema = "nome STRING, postagem STRING, data INT"
+	
+	df = spark.readStream.json("/home/fernando/testestream/", schema=jsonschema)
+	
+	def atualizapostgres(dataf, batchId):
+	#a tabela não pode existir!
+		dataf.write.format("jdbc").option("url","jdbc:postgresql://localhost:5432/posts").option("dbtable","posts").option("user","postgres").option("password","123456").option("driver","org.postgresql.Driver").mode("append").save()
+	
+	diretorio = "/home/fernando/temp/"
+	
+	Stcal = df.writeStream.foreachBatch(atualizapostgres).outputMode("append").trigger(processingTime="5 second").option("checkpointlocation",diretorio).start()
+	
+	Stcal.awaitTermination()

@@ -1,0 +1,42 @@
+#Prof. Fernando Amaral
+from pyspark.ml.regression import LinearRegression
+from pyspark.ml.evaluation import RegressionEvaluator
+from pyspark.ml.feature import VectorAssembler
+
+Carros_temp = spark.read.csv("/home/fernando/download/Carros.csv",inferSchema=True, header=True, sep=";")
+Carros_temp.show(5)
+
+#apenas colunas que vamos usar
+Carros = Carros_temp.select("Consumo","Cilindros","Cilindradas","HP")
+Carros.show()
+
+#dividifrom r em treino e teste
+CarrosTreino, CarrosTeste = Carros.randomSplit([0.7,0.3])
+
+#criar vetor de caracteristicas
+veccaracteristicas = VectorAssembler(inputCols=[("Consumo"),("Cilindros"),("Cilindradas")],outputCol="caracteristicas")
+
+#aplicamos em dados de treino
+vec_CarrosTreino = veccaracteristicas.transform(CarrosTreino)
+vec_CarrosTreino.show()
+
+#criamos modelo 
+#coluna caracteristicas foi criaada pelo VectorAssembler
+reglin = LinearRegression(featuresCol="caracteristicas", labelCol="HP")
+modelo = reglin.fit(vec_CarrosTreino)
+
+
+#pipelines permite criar um fluxo do processo
+
+from pyspark.ml import Pipeline
+
+pipeline = Pipeline(stages=[veccaracteristicas,reglin])
+#fit 
+pipelineModel = pipeline.fit(Carros)
+#previsão
+previsao = pipelineModel.transform(Carros)
+previsao.show()
+
+
+
+

@@ -1,0 +1,103 @@
+#Prof. Fernando Amaral
+#criar um data frame simples, sem schema
+from pyspark.sql import SparkSession
+df1 = spark.createDataFrame([("Pedro",10),("Maria",20),("José",40)])
+#show é ação, então tudo o que foi feito anteriormente é executado, lazzy
+df1.show()
+
+#criar df com schema
+schema = "Id INT, Nome STRING"
+dados = [[1,"Pedro"],[2,"Maria"]]
+df2 = spark.createDataFrame(dados, schema)
+df2.show()
+df2.show(l) 
+
+#com transformação
+from pyspark.sql.functions import sum
+schema2 = "Produtos STRING, Vendas INT"
+vendas = [["Caneta",10],["Lápis",20],["Caneta",40]]
+df3 = spark.createDataFrame(vendas , schema2 )
+agrupado = df3.groupBy("Produto").agg(sum("Vendas"))
+agrupado.show()
+#podemos contatenar as operações, neste caso sem persitir
+df3.groupBy("Produtos").agg(sum("Vendas")).show()
+
+#selecionar colunas específicas
+df3.select("Produtos").show()
+df3.select("Produtos","Vendas").show()
+
+#expressões e select
+from pyspark.sql.functions import expr
+df3.select("Produtos", "Vendas", expr("Vendas * 0.2")).show()
+
+#para ver o schema
+df3.schema()
+
+#ver colunas
+df3.columns
+
+#importar dados definindo schema
+#vamos deixar a data como string de propósito
+from pyspark.sql.types import *
+arqschema = "id INT, nome STRING, status STRING, cidade STRING, vendas INT, data STRING"
+#o caminho pode mudar, download é a pasta que você baixou com dados de exemplo
+despachantes = spark.read.csv("/home/fernando/download/despachantes.csv", header=False, schema=arqschema)
+despachantes.show()
+
+#outro exemplo, inferindo schema, usando load e informado tipo
+desp_autoschema = spark.read.load("/home/fernando/download/despachantes.csv",
+                     format="csv", sep=",", inferSchema=True, header=False)
+desp_autoschema.show()
+
+#comparando os schemas
+desp_autoschema.schema
+despachantes.schema
+
+from pyspark.sql import functions as Func
+
+#condição lógica com where
+despachantes.select("id","nome","vendas").where(Func.col("vendas") > 20).show()
+#& para and, | para or, e ~ para not
+despachantes.select("id","nome","vendas").where((Func.col("vendas") > 20) & (Func.col("vendas") < 40)).show()
+
+#renomear coluna
+novodf = despachantes.withColumnRenamed("nome","nomes")
+novodf.columns
+
+from pyspark.sql.functions import *
+#coluna data está como string, vamos transformar em texto
+despachantes2 = despachantes.withColumn("data2", to_timestamp(Func.col("data"),"yyyy-MM-dd"))
+despachantes2.schema
+
+#operações sobre datas
+despachantes2.select(year("data")).show()
+despachantes2.select(year("data")).distinct().show()
+despachantes2.select("nome",year("data")).orderBy("nome").show()
+despachantes2.select("data").groupBy(year("data")).count().show()
+despachantes2.select(Func.sum("vendas")).show()
+
+#salvar, são diretórios
+despachantes.write.format("parquet").save("/home/fernando/dfimportparquet")
+despachantes.write.format("csv").save("/home/fernando/dfimportcsv")
+despachantes.write.format("json").save("/home/fernando/dfimportjson")
+despachantes.write.format("orc").save("/home/fernando/dfimportorc")
+
+#ler dados
+par = spark.read.format("parquet").load("/home/fernando/dfimportparquet/despachantes.parquet")
+par.show()
+par.schema()
+
+js = spark.read.format("json").load("/home/fernando/dfimportjson/despachantes.json")
+js.show()
+js.schema()
+
+or = spark.read.format("orc").load("/home/fernando/dfimportorc/despachantes.orc")
+or.show()
+or.schema()
+
+cs = spark.read.format("csv").load("/home/fernando/dfimportcsv/despachantes.csv")
+cs.show()
+cs.schema()
+arqschema = "id INT, nome STRING, status STRING, cidade STRING, vendas INT, data STRING"
+
+cs2 = spark.read.format("csv").load("/home/fernando/dfimportcsv/despachantes.csv", schema=arqschema)

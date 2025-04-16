@@ -1,0 +1,45 @@
+#Prof. Fernando Amaral
+from pyspark.ml.feature import RFormula
+from pyspark.ml.classification import DecisionTreeClassifier
+from pyspark.ml.evaluation import BinaryClassificationEvaluator
+
+churn = spark.read.csv("/home/fernando/download/Churn.csv",inferSchema=True, header=True, sep=";")
+churn.show(3)
+
+
+
+#RFormula faz vários tipos de transformações
+formula = RFormula(formula="Exited ~ . ",featuresCol="features", labelCol="label", handleInvalid="skip")
+
+#aplicamos a formula e selecionamos apenas as colunas que interessam
+churn_trans = formula.fit(churn).transform(churn).select("features","label")
+
+#resultado
+churn_trans.show(truncate=False)
+
+
+churnTreino, churnTeste = churn_trans.randomSplit([0.7,0.3])
+
+
+dt = DecisionTreeClassifier(labelCol="label", featuresCol="features")
+modelo = dt.fit(churnTreino)
+
+Raw prediction for each possible label. The meaning of a "raw" prediction may vary between algorithms, but it intuitively gives a measure of confidence in each possible label (where larger = more confident).
+
+previsao = modelo.transform(churnTeste)
+previsao.show()
+
+
+
+#avaliar performance
+#accuracy
+avaliar = BinaryClassificationEvaluator(rawPredictionCol="prediction", labelCol="label",metricName="areaUnderROC")
+areaUnderROC = avaliar.evaluate(previsao)
+print(areaUnderROC)
+
+
+
+
+
+
+

@@ -1,0 +1,40 @@
+# Ignorar arquivos e pastas de notebooks Jupyter
+*.ipynb_checkpoints/
+*.ipynb
+
+# Ignorar arquivos de saída do PySpark
+*.crc
+*.parquet
+*.json
+*.csv
+*.orc
+
+# Ignorar arquivos de ambiente virtual
+venv/
+.env
+
+# Ignorar arquivos de configuração do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Ignorar logs e arquivos temporários
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Ignorar arquivos gerados por IDEs
+.vscode/
+.idea/
+*.iml
+
+# Ignorar arquivos de cache do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar arquivos de dependências instaladas localmente
+lib/
+lib64/

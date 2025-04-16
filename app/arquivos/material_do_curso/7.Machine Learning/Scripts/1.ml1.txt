@@ -1,0 +1,43 @@
+#Prof. Fernando Amaral
+from pyspark.ml.regression import LinearRegression, RandomForestRegressor
+from pyspark.ml.evaluation import RegressionEvaluator
+from pyspark.ml.feature import VectorAssembler
+
+Carros_temp = spark.read.csv("/home/fernando/download/Carros.csv",inferSchema=True, header=True, sep=";")
+Carros_temp.show()
+
+Carros = Carros_temp.select("Consumo","Cilindros","Cilindradas","HP")
+Carros.show()
+
+#criar vetor de caracteristicas
+veccaracteristicas = VectorAssembler(inputCols=[("Consumo"),("Cilindros"),("Cilindradas")],outputCol="caracteristicas")
+#aplicamos em dados de treino
+Carros = veccaracteristicas.transform(Carros)
+Carros.show()
+
+#dividir em treino e teste
+CarrosTreino, CarrosTeste = Carros.randomSplit([0.7,0.3])
+print(CarrosTreino.count())
+print(CarrosTeste.count())
+
+#criamos modelo 
+reglin = LinearRegression(featuresCol="caracteristicas", labelCol="HP")
+modelo = reglin.fit(CarrosTreino)
+
+#agora podemos prever - método transform do modelo
+previsao = modelo.transform(CarrosTeste)
+previsao.show()
+
+#avaliar performance
+avaliar = RegressionEvaluator(predictionCol="prediction", labelCol="HP",metricName='rmse')
+rmse = avaliar.evaluate(previsao)
+print(rmse)
+
+#vamos criar outro modelo e comparar a performance 
+rfreg = RandomForestRegressor(featuresCol="caracteristicas", labelCol="HP")
+modelo2 = rfreg.fit(CarrosTreino)
+
+previsao2 = modelo2.transform(CarrosTeste)
+previsao2.show()
+
+rmse2 = avaliar.evaluate(previsao2)

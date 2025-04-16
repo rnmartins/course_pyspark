@@ -1,0 +1,6 @@
+#Prof. Fernando Amaral
+spark.sql("use desp")
+spark.sql("show tables")
+churn = spark.read.csv("/home/fernando/download/Churn.csv", header=True, inferSchema=True, sep=";")
+churn.write.partitionBy("Geography").saveAsTable("Churn_Geo")
+churn.write.bucketBy(3,"Geography").saveAsTable("Churn_Geo2")
