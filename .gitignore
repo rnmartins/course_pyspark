@@ -22,4 +22,5 @@ Thumbs.db
 lib/
 lib64/
 
+# Ignora as pastas selecionadas
 app/arquivos/material_do_curso
